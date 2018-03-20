@@ -38,12 +38,12 @@ class Receiver{
         irrecv.resume();
        }
         if(timeflag==1){
-          if(millis()-lastButtonTime>=500 || count==3 ){
+          if(millis()-lastButtonTime>=2000 || count==3 ){
             //Change Channel
             timeflag=0;
             count=0;
             for(i=0;i<3;i++)
-          queue.setPrinter (Serial);
+              Serial.println(queue.pop());
           }
           
         }

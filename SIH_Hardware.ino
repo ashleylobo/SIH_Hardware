@@ -42,7 +42,7 @@ class Receiver{
             //Change Channel
             timeflag=0;
             count=0;
-            for(i=0;i<3;i++)
+            while(!queue.isEmpty())
               Serial.println(queue.pop());
           }
           
@@ -56,7 +56,7 @@ class Receiver{
 
   
 }
-  
+
  };
 
 Receiver recv;

@@ -13,11 +13,11 @@ QueueList <long> queue;
 
 class Receiver{
   public:
-    long RecvArray[10];
-    bool datarecv =0;
+    //long RecvArray[10];
+   // bool datarecv =0;
     int i,count=0;
     int timeflag=0;
-    
+    int recvflag=0;
     void compute()  {
       
        if (irrecv.decode(&results)){
@@ -42,8 +42,9 @@ class Receiver{
             //Change Channel
             timeflag=0;
             count=0;
-            while(!queue.isEmpty())
-              Serial.println(queue.pop());
+            recvflag=1;
+            //while(!queue.isEmpty())
+              //Serial.println(queue.pop());
           }
           
         }
@@ -58,9 +59,51 @@ class Receiver{
 }
 
  };
-
 Receiver recv;
 
+ class Controller{
+  public:
+    bool channel[250];
+    int i,temp=0;
+    int timeflag=0;
+
+    
+   void changeValue(){
+    for(i=0;i<75;i++)
+      channel[i]=false;
+    for(i=75;i<250;i++)
+      channel[i]=true;
+   }
+    
+      
+    void compute()  {
+      changeValue();
+      if(recv.recvflag==1)
+        {
+            while(!queue.isEmpty())
+              { temp*=10;               
+                temp+=queue.pop();
+                
+              }
+              recv.recvflag=0;
+              Serial.println(temp);
+              //Check if the channel is blocked or unblocked
+              if(channel[temp]==true){
+                Serial.println("Channel present");
+              }
+              else
+              Serial.println("Not Present");
+              temp=0;
+        }
+    }
+
+   
+
+ };
+
+
+
+Controller control;
 void setup(){
   recv.setup();  
 }
@@ -72,6 +115,7 @@ void loop(){
 //        irrecv.resume();
 //       }
   recv.compute();
+  control.compute();
   
 }
 

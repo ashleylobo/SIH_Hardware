@@ -10,14 +10,14 @@ const int RECV_PIN = 2;
 IRrecv irrecv(RECV_PIN);
 decode_results results;
 QueueList <long> queue;
-
+QueueList <long> chan;
 class Receiver{
   public:
     //long RecvArray[10];
    // bool datarecv =0;
     int i,count=0;
     int timeflag=0;
-    int recvflag=0;
+    int recvflag=0,sendFlag=0;
     void compute()  {
       
        if (irrecv.decode(&results)){
@@ -31,10 +31,16 @@ class Receiver{
                 timeflag=1;
                 count++;
                 queue.push(i);
+                chan.push(i);
+                sendFlag=2;
                 break;
               }                         
           }
-          
+          if(sendFlag==0)
+            {
+              sendFlag=1;
+              chan.push(results.value);
+            }
         irrecv.resume();
        }
         if(timeflag==1){
@@ -42,8 +48,9 @@ class Receiver{
             //Change Channel
             timeflag=0;
             count=0;
-            for(i=0;i<3;i++)
-          queue.setPrinter (Serial);
+            recvflag=1;
+            //while(!queue.isEmpty())
+              //Serial.println(queue.pop());
           }
           
         }
@@ -63,7 +70,7 @@ Receiver recv;
  class Controller{
   public:
     bool channel[250];
-    int i,temp=0;
+    int i,temp=0,controlFlag=0;
     int timeflag=0;
 
     
@@ -86,23 +93,46 @@ Receiver recv;
               }
               recv.recvflag=0;
               Serial.println(temp);
+              recv.sendFlag=0;
               //Check if the channel is blocked or unblocked
               if(channel[temp]==true){
                 Serial.println("Channel present");
+                controlFlag=1;
               }
-              else
+              
+              else{
               Serial.println("Not Present");
+              //Emptying contents kachra
+              while(!queue.isEmpty())
+               queue.pop();
+                           
+              }
               temp=0;
         }
     }
 
-   
-
  };
-
-
-
 Controller control;
+
+class Sender{
+  
+    void compute(){
+      if(control.controlFlag==1){
+        control.controlFlag=0;
+        while(!chan.isEmpty()){
+              chan.pop();
+              
+        }
+      }
+      if(recv.sendFlag==1){
+        while(!chan.isEmpty()){
+              chan.pop();
+              //IR SEH BHEJO 
+        }
+      }
+    }
+};
+Sender transmit;
 void setup(){
   recv.setup();  
 }
@@ -117,10 +147,5 @@ void loop(){
   control.compute();
   
 }
-
-
-
-            while(!queue.isEmpty())
-          Serial.println(queue.pop());
 
 

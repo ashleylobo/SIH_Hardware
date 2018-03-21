@@ -42,9 +42,8 @@ class Receiver{
             //Change Channel
             timeflag=0;
             count=0;
-            recvflag=1;
-            //while(!queue.isEmpty())
-              //Serial.println(queue.pop());
+            for(i=0;i<3;i++)
+          queue.setPrinter (Serial);
           }
           
         }
@@ -118,5 +117,10 @@ void loop(){
   control.compute();
   
 }
+
+
+
+            while(!queue.isEmpty())
+          Serial.println(queue.pop());
 
 

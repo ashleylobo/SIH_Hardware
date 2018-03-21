@@ -8,6 +8,7 @@ const int timeDelay = 500;
 
 const int RECV_PIN = 2;
 IRrecv irrecv(RECV_PIN);
+IRsend irsend;
 decode_results results;
 QueueList <long> queue;
 QueueList <long> chan;
@@ -104,7 +105,7 @@ Receiver recv;
               Serial.println("Not Present");
               //Emptying contents kachra
               while(!queue.isEmpty())
-               queue.pop();
+               chan.pop();
                            
               }
               temp=0;
@@ -115,19 +116,20 @@ Receiver recv;
 Controller control;
 
 class Sender{
-  
+  public:
     void compute(){
       if(control.controlFlag==1){
         control.controlFlag=0;
         while(!chan.isEmpty()){
-              chan.pop();
+              irsend.sendNEC(arr[chan.pop()],32);
               
         }
       }
       if(recv.sendFlag==1){
+        recv.sendFlag=0;
         while(!chan.isEmpty()){
-              chan.pop();
               //IR SEH BHEJO 
+              irsend.sendNEC(chan.pop(),32);
         }
       }
     }
@@ -145,6 +147,7 @@ void loop(){
 //       }
   recv.compute();
   control.compute();
+  transmit.compute();
   
 }
 

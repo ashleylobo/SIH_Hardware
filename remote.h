@@ -17,7 +17,7 @@
 #define channel_down 16
 #define volume_up 17
 #define volume_down 18
-long arr[]={
+unsigned long arr[]={
 	3772811383,//0
 	3772784863,
 	3772817503,

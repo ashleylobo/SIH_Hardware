@@ -1,4 +1,6 @@
 #include <IRremote.h>
+
+
 #include "remote.h"
 //#define RELAY_ON 0
 //#define RELAY_OFF 1
@@ -10,8 +12,8 @@ const int RECV_PIN = 2;
 IRrecv irrecv(RECV_PIN);
 IRsend irsend;
 decode_results results;
-QueueList <long> queue;
-QueueList <long> chan;
+QueueList <unsigned long> queue;
+QueueList < unsigned long> chan;
 class Receiver{
   public:
     //long RecvArray[10];
@@ -22,12 +24,13 @@ class Receiver{
     void compute()  {
       
        if (irrecv.decode(&results)){
-//        Serial.println(results.value);
+        //Serial.println(results.value);
 
            //0 to 9
           for(i=0;i<10;i++){
             if(results.value==arr[i])
               {
+                //Serial.println(arr[i]);
                 lastButtonTime=millis();
                 timeflag=1;
                 count++;
@@ -93,7 +96,7 @@ Receiver recv;
                 
               }
               recv.recvflag=0;
-              Serial.println(temp);
+              //Serial.println(temp);
               recv.sendFlag=0;
               //Check if the channel is blocked or unblocked
               if(channel[temp]==true){
@@ -104,7 +107,7 @@ Receiver recv;
               else{
               Serial.println("Not Present");
               //Emptying contents kachra
-              while(!queue.isEmpty())
+              while(!chan.isEmpty())
                chan.pop();
                            
               }
@@ -121,15 +124,20 @@ class Sender{
       if(control.controlFlag==1){
         control.controlFlag=0;
         while(!chan.isEmpty()){
-              irsend.sendNEC(arr[chan.pop()],32);
-              
+         
+             Serial.println(arr[chan.pop()]);
+//              irsend.sendSamsung();
+//              (arr[chan.pop()],32);
+              delay(100);
         }
       }
       if(recv.sendFlag==1){
         recv.sendFlag=0;
         while(!chan.isEmpty()){
               //IR SEH BHEJO 
-              irsend.sendNEC(chan.pop(),32);
+              Serial.println(chan.pop());
+             irsend.sendRaw(chan.pop(),32);
+             delay(100);
         }
       }
     }
@@ -148,6 +156,7 @@ void loop(){
   recv.compute();
   control.compute();
   transmit.compute();
+  
   
 }
 

@@ -16,9 +16,6 @@ void setup()
 }
 
 void loop() {
-	for (int i = 0; i < 3; i++) {
-		irsend.sendSony(0xa90, 12);
-		delay(40);
-	}
-	delay(5000); //5 second delay between each signal burst
+	irsend.sendNEC(16738455,32);
+	delay(500); //5 second delay between each signal burst
 }

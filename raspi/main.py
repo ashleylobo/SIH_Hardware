@@ -5,7 +5,7 @@ with serial.Serial('/dev/ttyACM0', 9600, timeout=10) as ser:
     # x = ser.read()          # read one byte
     line = ser.readline()   # read a '\n' terminated line
     # s = ser.read(10)        # read up to ten bytes (timeout)
-    print line
+    print (line)
 
     ser.write(b'fuckyou')
 
@@ -14,4 +14,4 @@ with serial.Serial('/dev/ttyACM0', 9600, timeout=10) as ser:
 
         line = ser.readline()   # read a '\n' terminated line
 
-    print "Response: ", line
+    print ("Response: ", line)

@@ -1,6 +1,5 @@
 #include <IRremote.h>
 
-
 #include "remote.h"
 //#define RELAY_ON 0
 //#define RELAY_OFF 1
@@ -9,6 +8,9 @@ unsigned long lastButtonTime = millis();
 const int timeDelay = 500;
 
 const int RECV_PIN = 2;
+int current=1;
+
+bool channel[250];
 IRrecv irrecv(RECV_PIN);
 IRsend irsend;
 decode_results results;
@@ -24,7 +26,7 @@ class Receiver{
     void compute()  {
       
        if (irrecv.decode(&results)){
-        //Serial.println("Helo");
+        Serial.println("Helo");
 
            //0 to 9
           for(i=0;i<10;i++){
@@ -36,11 +38,65 @@ class Receiver{
                 count++;
                 queue.push(i);
                 chan.push(i);
-               // Serial.println(i);
-                //Serial.println("Nooo");
+                Serial.println(i);
+                Serial.println("Nooo");
                 sendFlag=2;
                 break;
               }                         
+          }
+          if(results.value==arr[10]){
+            
+            irsend.sendNEC(arr[10],32);
+            irrecv.enableIRIn();
+            delay(6000);
+            queue.push(1);
+            chan.push(1);
+            
+            current=1;
+            timeflag=1;
+            count=3;
+            
+          }
+          if(results.value==arr[11]){
+            current=current-1;
+            if(current==0)
+              current=120;
+            int i=current;
+              while(!channel[i]){
+                if(i==0)
+                  i=120;
+                  i=i-1;
+              }
+              
+              int tempo=i;
+              current=i;
+            chan.push(tempo/100);queue.push(tempo/100); tempo=current/10;
+            chan.push(tempo%10);queue.push(tempo%10);
+            chan.push(current%10);queue.push(current%10);
+            count=3;
+            timeflag=1;
+            sendFlag=2;
+          }
+          
+          if(results.value==arr[12]){
+            current=current+1;
+            if(current==121)
+              current=1;
+            
+           int i=current;
+              while(!channel[i]){
+                if(i==120)
+                  i=0;
+                  i=i+1;
+              }
+              int tempo=i;
+              current=i;
+            chan.push(tempo/100);queue.push(tempo/100); tempo=current/10;
+            chan.push(tempo%10);queue.push(tempo%10);
+            chan.push(current%10);queue.push(current%10);
+            count=3;
+            timeflag=1;
+            sendFlag=2;
           }
           if(sendFlag==0)
             {
@@ -75,16 +131,18 @@ Receiver recv;
 
  class Controller{
   public:
-    bool channel[250];
+    
     int i,temp=0,controlFlag=0;
     int timeflag=0;
 
     
    void changeValue(){
-    for(i=0;i<75;i++)
+    channel[1]=true;
+    for(i=2;i<75;i++)
       channel[i]=false;
     for(i=75;i<250;i++)
       channel[i]=true;
+      channel[80]=false;
    }
     
       
@@ -104,15 +162,31 @@ Receiver recv;
               if(channel[temp]==true){
                 Serial.println("Channel present");
                 controlFlag=1;
+                current=temp;
               }
               
               else{
-              Serial.println("Not Present");
+              Serial.println("Not Present       ");
               //Emptying contents kachra
               while(!chan.isEmpty())
                chan.pop();
-                           
+
+               /*
+                 int i=temp+1;
+              while(!channel[i]){
+                if(i==120)
+                  i=0;
+                  i=i+1;
               }
+              int tempo=i;
+              Serial.println("The Value is");Serial.println(i);
+              chan.push(tempo/100);tempo=i/10;
+            chan.push(tempo%10);
+            chan.push(i%10);
+             controlFlag=1;
+             current=i;       */    
+              }
+              
               temp=0;
         }
     }
@@ -123,28 +197,33 @@ Controller control;
 class Sender{
   public:
     void compute(){
-      if(control.controlFlag==1){
-        control.controlFlag=0;
-        while(!chan.isEmpty()){
-         
-             Serial.println(arr[chan.pop()]);
-             irsend.sendNEC(16738455,32);
-             //Serial.println("heeloo");
-             irrecv.enableIRIn();
-              delay(100);
-        }
-      }
       if(recv.sendFlag==1){
         recv.sendFlag=0;
         while(!chan.isEmpty()){
               //IR SEH BHEJO 
-              Serial.println(chan.pop());
-             irsend.sendNEC(16738455,32);
-            // Serial.println("Hello");
+              unsigned long tt =chan.pop();
+              Serial.println(tt);
+             irsend.sendNEC(tt,32);
+             Serial.println("Current is");Serial.print(current);
              irrecv.enableIRIn();
              delay(500);
         }
       }
+      if(control.controlFlag==1){
+        control.controlFlag=0;
+        while(!chan.isEmpty()){
+         
+            //
+             unsigned long tt= arr[chan.pop()];
+              Serial.println(tt);
+             irsend.sendNEC(tt,32);
+
+             Serial.println("Current is");Serial.println(current);
+              irrecv.enableIRIn();
+              delay(100);
+        }
+      }
+      
     }
 };
 Sender transmit;
@@ -164,7 +243,8 @@ void loop(){
   //Serial.println(recv.timeflag);
   //Serial.println(recv.sendFlag);
   //Serial.println(recv.recvflag);
-  delay(300);
+  Serial.println("xoxo");
+  delay(1000);
   //Serial.println("Kitoo");
   //irrecv.enableIRIn();
   
